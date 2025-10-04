@@ -122,15 +122,18 @@
 
   - task: "Arquivo PHP para geração de ICS alternativo"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/Refinamentos/generate_ics.php"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "Criado arquivo separado para geração de ICS no servidor como alternativa ao JavaScript cliente"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTADO: Arquivo generate_ics.php completo com validação de autenticação, validação de parâmetros, query SQL segura, geração de formato ICS padrão (VCALENDAR, VEVENT, VALARM), headers HTTP corretos (Content-Type: text/calendar, Content-Disposition: attachment), tratamento de erros com códigos HTTP apropriados (400, 401, 404, 500), escape de caracteres especiais. Implementação robusta e segura."
 
 ## frontend:
   - task: "Seção Agenda T101 com lista dinâmica de palestras"
