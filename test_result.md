@@ -107,15 +107,18 @@
 ## backend:
   - task: "Buscar palestras da tabela upcoming_announcements"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/Refinamentos/live-stream/index2.php"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "Implementado código PHP para buscar palestras do banco de dados usando query SELECT com filtros por data ativa e futura"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTADO: Query SQL correta com SELECT id, title, speaker, announcement_date, lecture_time, description, image_path FROM upcoming_announcements WHERE is_active = 1 AND announcement_date >= CURDATE() ORDER BY announcement_date ASC LIMIT 10. Código PHP sem erros de sintaxe, prepared statements implementados, tratamento de erro com try/catch PDOException. Funcionalidade tecnicamente correta."
 
   - task: "Arquivo PHP para geração de ICS alternativo"
     implemented: true
