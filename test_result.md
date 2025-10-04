@@ -101,3 +101,86 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+## user_problem_statement: "Implementar seção 'Agenda T101' no index2.php (live stream page) com funcionalidade para baixar arquivos ICS de convites para palestras"
+
+## backend:
+  - task: "Buscar palestras da tabela upcoming_announcements"
+    implemented: true
+    working: "NA"
+    file: "/app/Refinamentos/live-stream/index2.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implementado código PHP para buscar palestras do banco de dados usando query SELECT com filtros por data ativa e futura"
+
+  - task: "Arquivo PHP para geração de ICS alternativo"
+    implemented: true
+    working: "NA"
+    file: "/app/Refinamentos/generate_ics.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Criado arquivo separado para geração de ICS no servidor como alternativa ao JavaScript cliente"
+
+## frontend:
+  - task: "Seção Agenda T101 com lista dinâmica de palestras"
+    implemented: true
+    working: "NA"
+    file: "/app/Refinamentos/live-stream/index2.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implementado HTML dinâmico com PHP para exibir palestras com estilo Apple Vision"
+
+  - task: "Funcionalidade JavaScript para download de arquivos ICS"
+    implemented: true
+    working: "NA"
+    file: "/app/Refinamentos/live-stream/index2.php"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Implementado JavaScript para gerar e baixar arquivos ICS com dados da palestra, incluindo lembrete de 30 minutos"
+
+  - task: "Estilos CSS para nova seção"
+    implemented: true
+    working: "NA"
+    file: "/app/Refinamentos/live-stream/index2.php"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Adicionados estilos CSS responsivos mantendo o tema Apple Vision"
+
+## metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+## test_plan:
+  current_focus:
+    - "Seção Agenda T101 com lista dinâmica de palestras"
+    - "Funcionalidade JavaScript para download de arquivos ICS"
+    - "Buscar palestras da tabela upcoming_announcements"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+## agent_communication:
+    - agent: "main"
+    - message: "Implementei a seção Agenda T101 no index2.php com: 1) Busca dinâmica de palestras do banco, 2) Exibição com estilo Apple Vision, 3) Texto instrucional, 4) Botões para download de ICS com JavaScript, 5) Arquivo PHP alternativo para geração ICS. Precisa testar a conectividade com banco e funcionalidade dos downloads."
