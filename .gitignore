@@ -83,3 +83,7 @@ Refinamentos/.git/objects/pack/pack-b1cb70aab2b315a7762bc4f5cee013b2babd2104.pac
 # Environment files
 *.env
 *.env.*
+-e 
+# Environment files
+*.env
+*.env.*
