@@ -153,15 +153,18 @@
 
   - task: "Funcionalidade JavaScript para download de arquivos ICS"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/Refinamentos/live-stream/index2.php"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "Implementado JavaScript para gerar e baixar arquivos ICS com dados da palestra, incluindo lembrete de 30 minutos"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ TESTADO: JavaScript completo com função downloadICSFile, event listeners para botões download-ics-btn, atributos data-* para passar dados (title, speaker, date, time, description), geração de formato ICS padrão (BEGIN:VCALENDAR, VEVENT, VALARM), cálculo de datas/horários, criação de Blob e download automático, feedback visual nos botões, limpeza de nomes de arquivo. Implementação client-side robusta."
 
   - task: "Estilos CSS para nova seção"
     implemented: true
