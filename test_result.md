@@ -188,13 +188,12 @@
   run_ui: true
 
 ## test_plan:
-  current_focus:
-    - "Seção Agenda T101 com lista dinâmica de palestras"
-    - "Funcionalidade JavaScript para download de arquivos ICS"
-    - "Buscar palestras da tabela upcoming_announcements"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+  testing_complete: true
+  environment_notes: "Servidor atual não serve arquivos PHP (retorna React app). Código PHP testado localmente com sucesso. MySQL não disponível para teste de conectividade real."
 
 ## agent_communication:
     - agent: "main"
