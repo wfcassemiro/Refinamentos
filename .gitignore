@@ -87,3 +87,7 @@ php-system/.git/objects/pack/pack-43375ac9503e1270e27d67095be78a7773d23b66.pack
 # Environment files
 *.env
 *.env.*
+-e 
+# Environment files
+*.env
+*.env.*
