@@ -10,6 +10,15 @@ require_once 'zoom_auth.php';
  * Obter informações do usuário Zoom (para usar como host)
  */
 function getZoomUser() {
+    // Primeiro, tentar listar usuários da conta
+    $result = zoomApiRequest('/users?status=active&page_size=1');
+    
+    if ($result['success'] && !empty($result['data']['users'])) {
+        // Retornar o primeiro usuário ativo
+        return $result['data']['users'][0];
+    }
+    
+    // Se falhar, tentar /users/me
     $result = zoomApiRequest('/users/me');
     
     if ($result['success']) {
