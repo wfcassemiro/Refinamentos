@@ -243,20 +243,18 @@
             testBtn.disabled = true;
             
             try {
-                // Criar credenciais base64
-                const credentials = btoa(clientId + ':' + clientSecret);
-                
-                // Fazer requisição para obter token
-                const response = await fetch(
-                    `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${accountId}`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Basic ' + credentials,
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        }
-                    }
-                );
+                // Fazer requisição via proxy PHP
+                const response = await fetch('testar_credenciais_proxy.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accountId: accountId,
+                        clientId: clientId,
+                        clientSecret: clientSecret
+                    })
+                });
                 
                 const data = await response.json();
                 
