@@ -25,8 +25,17 @@ date_default_timezone_set('America/Sao_Paulo');
 
 /**
  * Conexão com o banco de dados
+ * Usa a conexão PDO existente do sistema
  */
 function getDbConnection() {
+    // Usar a conexão global do sistema se disponível
+    global $pdo;
+    
+    if (isset($pdo) && $pdo instanceof PDO) {
+        return $pdo;
+    }
+    
+    // Caso contrário, criar nova conexão
     try {
         $pdo = new PDO(
             "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
