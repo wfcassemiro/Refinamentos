@@ -551,6 +551,24 @@ include __DIR__ . '/../vision/includes/head.php';
                             <button type="submit" class="btn btn-info">🔄 Sincronizar</button>
                         </form>
                         
+                        <?php if (isset($meeting['show_live']) && $meeting['show_live'] == 1): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="action" value="remove_live">
+                                <input type="hidden" name="meeting_id" value="<?php echo $meeting['meeting_id']; ?>">
+                                <button type="submit" class="btn btn-success" style="background: #27ae60;">
+                                    🔴 AO VIVO (Remover)
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="action" value="set_live">
+                                <input type="hidden" name="meeting_id" value="<?php echo $meeting['meeting_id']; ?>">
+                                <button type="submit" class="btn btn-info" style="background: #3498db;">
+                                    📺 Colocar no Ar
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                        
                         <form method="POST" style="display: inline;" 
                               onsubmit="return confirm('Deseja realmente deletar esta reunião?');">
                             <input type="hidden" name="action" value="delete">
