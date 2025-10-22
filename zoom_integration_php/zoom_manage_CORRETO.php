@@ -113,6 +113,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $messageType = 'error';
             }
             break;
+            
+        case 'set_live':
+            // Desativar todas as outras
+            $pdo->exec("UPDATE zoom_meetings SET show_live = 0");
+            
+            // Ativar apenas esta
+            $stmt = $pdo->prepare("UPDATE zoom_meetings SET show_live = 1 WHERE meeting_id = ?");
+            $stmt->execute([$_POST['meeting_id']]);
+            
+            $message = 'Reunião configurada para exibição ao vivo!';
+            $messageType = 'success';
+            break;
+            
+        case 'remove_live':
+            $stmt = $pdo->prepare("UPDATE zoom_meetings SET show_live = 0 WHERE meeting_id = ?");
+            $stmt->execute([$_POST['meeting_id']]);
+            
+            $message = 'Reunião removida da exibição ao vivo!';
+            $messageType = 'success';
+            break;
     }
 }
 
