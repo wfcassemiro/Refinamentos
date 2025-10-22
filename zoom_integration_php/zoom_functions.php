@@ -1,6 +1,16 @@
 <?php
 /**
  * Funções para gerenciamento de reuniões do Zoom
+ * 
+ * ESCOPOS NECESSÁRIOS (Formato Granular):
+ * - meeting:write:meeting:admin   (Criar reuniões)
+ * - meeting:read:meeting:admin    (Ler informações de reuniões)
+ * - meeting:update:meeting:admin  (Atualizar reuniões)
+ * - meeting:delete:meeting:admin  (Deletar reuniões)
+ * - user:read:user:admin          (Ler informações de usuários - necessário para host)
+ * 
+ * IMPORTANTE: Use o formato granular com repetição do recurso!
+ * Exemplo: meeting:write:meeting:admin (NÃO meeting:write:admin)
  */
 
 require_once 'zoom_config.php';
@@ -8,6 +18,7 @@ require_once 'zoom_auth.php';
 
 /**
  * Obter informações do usuário Zoom (para usar como host)
+ * ESCOPO NECESSÁRIO: user:read:user:admin
  */
 function getZoomUser() {
     // Primeiro, tentar listar usuários da conta
@@ -30,6 +41,7 @@ function getZoomUser() {
 
 /**
  * Criar uma nova reunião no Zoom
+ * ESCOPO NECESSÁRIO: meeting:write:meeting:admin
  */
 function createZoomMeeting($topic, $startTime, $duration, $agenda = '', $timezone = 'America/Sao_Paulo') {
     $user = getZoomUser();
@@ -84,6 +96,7 @@ function createZoomMeeting($topic, $startTime, $duration, $agenda = '', $timezon
 
 /**
  * Obter informações de uma reunião existente
+ * ESCOPO NECESSÁRIO: meeting:read:meeting:admin
  */
 function getZoomMeeting($meetingId) {
     $result = zoomApiRequest('/meetings/' . $meetingId);
@@ -103,6 +116,7 @@ function getZoomMeeting($meetingId) {
 
 /**
  * Listar todas as reuniões do usuário
+ * ESCOPO NECESSÁRIO: meeting:read:meeting:admin
  */
 function listZoomMeetings($type = 'scheduled') {
     $user = getZoomUser();
@@ -121,6 +135,7 @@ function listZoomMeetings($type = 'scheduled') {
 
 /**
  * Deletar uma reunião do Zoom
+ * ESCOPO NECESSÁRIO: meeting:delete:meeting:admin
  */
 function deleteZoomMeeting($meetingId) {
     $result = zoomApiRequest('/meetings/' . $meetingId, 'DELETE');
@@ -140,6 +155,7 @@ function deleteZoomMeeting($meetingId) {
 
 /**
  * Atualizar uma reunião existente
+ * ESCOPO NECESSÁRIO: meeting:update:meeting:admin
  */
 function updateZoomMeeting($meetingId, $data) {
     $result = zoomApiRequest('/meetings/' . $meetingId, 'PATCH', $data);
@@ -222,22 +238,36 @@ function deleteMeetingFromDatabase($meetingId) {
 
 /**
  * Obter reuniões ativas do banco de dados
+ * Suporta filtragem por padrão S##E## (Season/Episode)
  */
-function getActiveMeetingsFromDatabase($limit = 10) {
+function getActiveMeetingsFromDatabase($limit = 10, $filterSeasonEpisode = false) {
     $pdo = getDbConnection();
     
     try {
-        $stmt = $pdo->prepare("
-            SELECT * FROM zoom_meetings 
-            WHERE is_active = 1 
-            AND start_time >= NOW() 
-            ORDER BY start_time ASC 
-            LIMIT :limit
-        ");
+        $sql = "SELECT * FROM zoom_meetings WHERE is_active = 1 AND start_time >= NOW()";
+        
+        // Filtrar por formato S##E## (compatível com MySQL e MariaDB)
+        if ($filterSeasonEpisode) {
+            // Usando LIKE para maior compatibilidade
+            $sql .= " AND (topic LIKE 'S__E__%' OR topic LIKE 'S__E__-%')";
+        }
+        
+        $sql .= " ORDER BY start_time ASC LIMIT :limit";
+        
+        $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->execute();
         
-        return $stmt->fetchAll();
+        $results = $stmt->fetchAll();
+        
+        // Filtro adicional em PHP para garantir formato exato S##E##
+        if ($filterSeasonEpisode && !empty($results)) {
+            $results = array_filter($results, function($meeting) {
+                return preg_match('/^S[0-9]{2}E[0-9]{2}/', $meeting['topic']);
+            });
+        }
+        
+        return array_values($results); // Reindexar array
     } catch (PDOException $e) {
         error_log("Erro ao buscar reuniões do BD: " . $e->getMessage());
         return [];
@@ -290,6 +320,7 @@ function extractMeetingIdFromUrl($url) {
 
 /**
  * Adicionar reunião existente pelo ID ou URL
+ * ESCOPO NECESSÁRIO: meeting:read:meeting:admin
  */
 function addExistingMeeting($meetingIdOrUrl) {
     $meetingId = extractMeetingIdFromUrl($meetingIdOrUrl);

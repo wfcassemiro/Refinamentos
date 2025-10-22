@@ -95,18 +95,29 @@ try {
     $upcomingLectures = [];
 }
 
-// NOVA: Buscar próximas reuniões do Zoom com formato S##E##
+// NOVA: Buscar próximas reuniões do Zoom com formato S##E## (APENAS FUTURAS)
 $upcomingZoomMeetings = [];
 try {
+    // Query compatível com MySQL e MariaDB usando LIKE
     $stmt = $pdo->query("
         SELECT * FROM zoom_meetings
         WHERE is_active = 1
         AND start_time >= NOW()
-        AND topic REGEXP '^S[0-9]{2}E[0-9]{2}'
+        AND (topic LIKE 'S__E__%' OR topic LIKE 'S__E__-%')
         ORDER BY start_time ASC
         LIMIT 6
     ");
-    $upcomingZoomMeetings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Filtro adicional em PHP para garantir formato exato S##E##
+    if (!empty($results)) {
+        foreach ($results as $meeting) {
+            // Verificar se o título começa com S[dígito][dígito]E[dígito][dígito]
+            if (preg_match('/^S[0-9]{2}E[0-9]{2}/', $meeting['topic'])) {
+                $upcomingZoomMeetings[] = $meeting;
+            }
+        }
+    }
 } catch (Exception $e) {
     error_log("Erro ao buscar reuniões Zoom futuras: " . $e->getMessage());
     $upcomingZoomMeetings = [];
@@ -1198,11 +1209,11 @@ body {
         </div>
     <?php endif; ?>
 
-    <!-- NOVA SEÇÃO: Próximas Reuniões Zoom (S##E##) -->
+    <!-- NOVA SEÇÃO: Próximas Reuniões Zoom (S##E##) - APENAS FUTURAS -->
     <?php if (!empty($upcomingZoomMeetings)): ?>
         <div class="video-card schedule-card zoom-schedule">
             <h2><i class="fab fa-zoom"></i> Próximos Episódios no Zoom</h2>
-            <p class="schedule-instruction instruction-highlight">Reuniões agendadas com formato S##E## (Season/Episode)</p>
+            <p class="schedule-instruction instruction-highlight">Reuniões futuras agendadas com formato S##E## (Season/Episode)</p>
             
             <div class="lectures-grid" id="zoomMeetingsContainer">
                 <?php foreach ($upcomingZoomMeetings as $meeting): ?>
@@ -1631,7 +1642,7 @@ function generateIcs(e) {
         `DESCRIPTION;CHARSET=UTF-8:${escapedDescription}\\n\\nPalestrante: ${escapedSpeaker}\\n\\nAssista em: https://translators101.com/v/live-stream`,
         `LOCATION;CHARSET=UTF-8:Translators101 - Online`,
         `UID:${Date.now()}-${Math.random().toString(36).substring(2, 9)}@translators101.com.br`,
-        `DTSTAMP:${new Date().toISOString().replace(/[-:]|\.\\d{3}/g, '')}Z`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]|\\.\\d{3}/g, '')}Z`,
         'BEGIN:VALARM',
         'ACTION:DISPLAY',
         `DESCRIPTION;CHARSET=UTF-8:Lembrete: ${escapedTitle}`,
