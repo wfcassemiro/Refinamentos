@@ -280,7 +280,7 @@ header('Content-Type: text/html; charset=utf-8');
             $scopeTests = [
                 [
                     'name' => 'Listar Usuários',
-                    'scope' => 'user:read:user:admin',
+                    'scope' => 'user:read:list_users:admin',
                     'endpoint' => '/users?status=active&page_size=1',
                     'method' => 'GET'
                 ],
@@ -292,7 +292,7 @@ header('Content-Type: text/html; charset=utf-8');
                 ],
                 [
                     'name' => 'Listar Reuniões',
-                    'scope' => 'meeting:read:meeting:admin',
+                    'scope' => 'meeting:read:list_meetings:admin',
                     'endpoint' => '/users/me/meetings?type=scheduled&page_size=1',
                     'method' => 'GET'
                 ]
