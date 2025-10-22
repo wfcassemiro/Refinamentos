@@ -4,6 +4,7 @@
  * Execute este arquivo UMA VEZ para configurar o banco de dados
  */
 
+require_once __DIR__ . '/../config/database.php';
 require_once 'zoom_config.php';
 
 echo "<!DOCTYPE html>
