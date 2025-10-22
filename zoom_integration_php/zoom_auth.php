@@ -9,21 +9,26 @@ require_once 'zoom_config.php';
  * Obtém token de acesso OAuth do Zoom
  * Usa Server-to-Server OAuth (não requer interação do usuário)
  */
-function getZoomAccessToken() {
+function getZoomAccessToken($forceRefresh = false) {
     // Verificar se já existe um token válido em cache
     $cacheFile = sys_get_temp_dir() . '/zoom_token_cache.json';
     
-    if (file_exists($cacheFile)) {
+    if (!$forceRefresh && file_exists($cacheFile)) {
         $cacheData = json_decode(file_get_contents($cacheFile), true);
         
         // Se o token ainda é válido (com margem de 5 minutos)
         if (isset($cacheData['expires_at']) && $cacheData['expires_at'] > (time() + 300)) {
+            error_log("Zoom: Usando token em cache (expira em: " . date('Y-m-d H:i:s', $cacheData['expires_at']) . ")");
             return $cacheData['access_token'];
+        } else {
+            error_log("Zoom: Token em cache expirado, obtendo novo token");
         }
     }
     
     // Criar credenciais base64 para autenticação básica
     $credentials = base64_encode(ZOOM_CLIENT_ID . ':' . ZOOM_CLIENT_SECRET);
+    
+    error_log("Zoom: Solicitando novo token de acesso");
     
     // Preparar requisição
     $ch = curl_init();
@@ -47,29 +52,32 @@ function getZoomAccessToken() {
     curl_close($ch);
     
     if ($error) {
-        error_log("Erro cURL ao obter token Zoom: " . $error);
+        error_log("Zoom: Erro cURL ao obter token: " . $error);
         return false;
     }
     
     if ($httpCode !== 200) {
-        error_log("Erro HTTP ao obter token Zoom: " . $httpCode . " - " . $response);
+        error_log("Zoom: Erro HTTP " . $httpCode . " ao obter token. Resposta: " . $response);
         return false;
     }
     
     $data = json_decode($response, true);
     
     if (!isset($data['access_token'])) {
-        error_log("Token de acesso não encontrado na resposta do Zoom");
+        error_log("Zoom: Token de acesso não encontrado na resposta. Resposta: " . json_encode($data));
         return false;
     }
     
     // Salvar token em cache
     $cacheData = [
         'access_token' => $data['access_token'],
-        'expires_at' => time() + ($data['expires_in'] ?? 3600)
+        'expires_at' => time() + ($data['expires_in'] ?? 3600),
+        'created_at' => time()
     ];
     
     file_put_contents($cacheFile, json_encode($cacheData));
+    
+    error_log("Zoom: Novo token obtido com sucesso (expira em: " . ($data['expires_in'] ?? 3600) . " segundos)");
     
     return $data['access_token'];
 }
