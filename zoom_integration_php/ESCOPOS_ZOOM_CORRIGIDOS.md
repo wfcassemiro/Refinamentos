@@ -115,19 +115,33 @@ Na seção **"User"**, marque:
 ```
 meeting:write:meeting:admin
 meeting:read:meeting:admin
+meeting:read:list_meetings:admin
 user:read:user:admin
+user:read:list_users:admin
 ```
 
 ### Escopos RECOMENDADOS (para funcionalidade completa)
 ```
 meeting:write:meeting:admin
 meeting:read:meeting:admin
+meeting:read:list_meetings:admin
 meeting:update:meeting:admin
 meeting:delete:meeting:admin
 meeting:update:status:admin
 user:read:user:admin
-user:write:user:admin (se precisar criar/atualizar usuários)
+user:read:list_users:admin
+user:write:user:admin
+user:delete:user:admin (opcional)
 ```
+
+### 💡 IMPORTANTE: Entenda os escopos LIST vs READ
+
+O Zoom tem escopos separados para listar e ler:
+
+- **LIST** (listar múltiplos): `meeting:read:list_meetings:admin`
+- **READ** (ler individual): `meeting:read:meeting:admin`
+
+**Ambos são necessários!** O mesmo vale para usuários.
 
 ---
 
