@@ -365,10 +365,12 @@ header('Content-Type: text/html; charset=utf-8');
             $requiredScopes = [
                 'meeting:write:meeting:admin',
                 'meeting:read:meeting:admin',
+                'meeting:read:list_meetings:admin',
                 'meeting:update:meeting:admin',
                 'meeting:delete:meeting:admin',
                 'meeting:update:status:admin',
                 'user:read:user:admin',
+                'user:read:list_users:admin',
                 'user:write:user:admin'
             ];
             
