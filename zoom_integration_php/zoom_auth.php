@@ -1,0 +1,166 @@
+<?php
+/**
+ * Sistema de Autenticação OAuth 2.0 Server-to-Server do Zoom
+ */
+
+require_once 'zoom_config.php';
+
+/**
+ * Obtém token de acesso OAuth do Zoom
+ * Usa Server-to-Server OAuth (não requer interação do usuário)
+ */
+function getZoomAccessToken() {
+    // Verificar se já existe um token válido em cache
+    $cacheFile = sys_get_temp_dir() . '/zoom_token_cache.json';
+    
+    if (file_exists($cacheFile)) {
+        $cacheData = json_decode(file_get_contents($cacheFile), true);
+        
+        // Se o token ainda é válido (com margem de 5 minutos)
+        if (isset($cacheData['expires_at']) && $cacheData['expires_at'] > (time() + 300)) {
+            return $cacheData['access_token'];
+        }
+    }
+    
+    // Criar credenciais base64 para autenticação básica
+    $credentials = base64_encode(ZOOM_CLIENT_ID . ':' . ZOOM_CLIENT_SECRET);
+    
+    // Preparar requisição
+    $ch = curl_init();
+    
+    curl_setopt_array($ch, [
+        CURLOPT_URL => ZOOM_OAUTH_TOKEN_URL . '?grant_type=account_credentials&account_id=' . ZOOM_ACCOUNT_ID,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Basic ' . $credentials,
+            'Content-Type: application/x-www-form-urlencoded'
+        ],
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_TIMEOUT => 30
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    
+    curl_close($ch);
+    
+    if ($error) {
+        error_log("Erro cURL ao obter token Zoom: " . $error);
+        return false;
+    }
+    
+    if ($httpCode !== 200) {
+        error_log("Erro HTTP ao obter token Zoom: " . $httpCode . " - " . $response);
+        return false;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if (!isset($data['access_token'])) {
+        error_log("Token de acesso não encontrado na resposta do Zoom");
+        return false;
+    }
+    
+    // Salvar token em cache
+    $cacheData = [
+        'access_token' => $data['access_token'],
+        'expires_at' => time() + ($data['expires_in'] ?? 3600)
+    ];
+    
+    file_put_contents($cacheFile, json_encode($cacheData));
+    
+    return $data['access_token'];
+}
+
+/**
+ * Fazer requisição autenticada à API do Zoom
+ */
+function zoomApiRequest($endpoint, $method = 'GET', $data = null) {
+    $token = getZoomAccessToken();
+    
+    if (!$token) {
+        return [
+            'success' => false,
+            'error' => 'Não foi possível obter token de autenticação'
+        ];
+    }
+    
+    $url = ZOOM_API_BASE_URL . $endpoint;
+    
+    $ch = curl_init();
+    
+    $headers = [
+        'Authorization: Bearer ' . $token,
+        'Content-Type: application/json'
+    ];
+    
+    $curlOptions = [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_TIMEOUT => 30
+    ];
+    
+    if ($method === 'POST') {
+        $curlOptions[CURLOPT_POST] = true;
+        if ($data) {
+            $curlOptions[CURLOPT_POSTFIELDS] = json_encode($data);
+        }
+    } elseif ($method === 'PATCH') {
+        $curlOptions[CURLOPT_CUSTOMREQUEST] = 'PATCH';
+        if ($data) {
+            $curlOptions[CURLOPT_POSTFIELDS] = json_encode($data);
+        }
+    } elseif ($method === 'DELETE') {
+        $curlOptions[CURLOPT_CUSTOMREQUEST] = 'DELETE';
+    }
+    
+    curl_setopt_array($ch, $curlOptions);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    
+    curl_close($ch);
+    
+    if ($error) {
+        error_log("Erro cURL na API Zoom: " . $error);
+        return [
+            'success' => false,
+            'error' => 'Erro de conexão: ' . $error
+        ];
+    }
+    
+    $responseData = json_decode($response, true);
+    
+    if ($httpCode >= 200 && $httpCode < 300) {
+        return [
+            'success' => true,
+            'data' => $responseData,
+            'http_code' => $httpCode
+        ];
+    } else {
+        return [
+            'success' => false,
+            'error' => $responseData['message'] ?? 'Erro desconhecido',
+            'http_code' => $httpCode,
+            'response' => $responseData
+        ];
+    }
+}
+
+/**
+ * Validar webhook do Zoom (para eventos futuros)
+ */
+function validateZoomWebhook($payload, $signature) {
+    $message = 'v0:' . $_SERVER['HTTP_X_ZM_REQUEST_TIMESTAMP'] . ':' . $payload;
+    $hash = hash_hmac('sha256', $message, ZOOM_SECRET_TOKEN);
+    $expectedSignature = 'v0=' . $hash;
+    
+    return hash_equals($expectedSignature, $signature);
+}
+
+?>
