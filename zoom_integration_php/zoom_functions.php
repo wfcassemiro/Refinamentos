@@ -34,14 +34,12 @@ function getZoomUser() {
 function createZoomMeeting($topic, $startTime, $duration, $agenda = '', $timezone = 'America/Sao_Paulo') {
     $user = getZoomUser();
     
+    // Se não conseguir pegar o usuário, usar 'me' como fallback
     if (!$user) {
-        return [
-            'success' => false,
-            'error' => 'Não foi possível obter informações do usuário Zoom'
-        ];
+        $userId = 'me';
+    } else {
+        $userId = $user['id'];
     }
-    
-    $userId = $user['id'];
     
     // Formatar data/hora para ISO 8601
     $startTimeFormatted = date('Y-m-d\TH:i:s', strtotime($startTime));
