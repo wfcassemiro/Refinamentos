@@ -14,11 +14,11 @@ define('ZOOM_SECRET_TOKEN', 'Kim4ExnFS7mFd61Grrr3UQ');
 define('ZOOM_API_BASE_URL', 'https://api.zoom.us/v2');
 define('ZOOM_OAUTH_TOKEN_URL', 'https://zoom.us/oauth/token');
 
-// Configurações do Banco de Dados (ajustar conforme seu ambiente)
+// Configurações do Banco de Dados
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'seu_banco_de_dados');
-define('DB_USER', 'seu_usuario');
-define('DB_PASS', 'sua_senha');
+define('DB_NAME', 'u335416710_t101_db');
+define('DB_USER', 'u335416710_t101');
+define('DB_PASS', 'Pa392ap!');
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');
