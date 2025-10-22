@@ -107,14 +107,12 @@ function getZoomMeeting($meetingId) {
 function listZoomMeetings($type = 'scheduled') {
     $user = getZoomUser();
     
+    // Se não conseguir pegar o usuário, usar 'me' como fallback
     if (!$user) {
-        return [
-            'success' => false,
-            'error' => 'Não foi possível obter informações do usuário Zoom'
-        ];
+        $userId = 'me';
+    } else {
+        $userId = $user['id'];
     }
-    
-    $userId = $user['id'];
     
     $result = zoomApiRequest('/users/' . $userId . '/meetings?type=' . $type);
     
