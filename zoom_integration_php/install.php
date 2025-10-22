@@ -185,12 +185,33 @@ if ($configOk && $dbOk) {
             echo "<div class='code'>";
             echo "ID: " . htmlspecialchars($user['id']) . "<br>";
             echo "Email: " . htmlspecialchars($user['email']) . "<br>";
-            echo "Nome: " . htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
+            
+            // Verificar se tem first_name e last_name
+            $nome = '';
+            if (isset($user['first_name']) && isset($user['last_name'])) {
+                $nome = htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
+            } else if (isset($user['display_name'])) {
+                $nome = htmlspecialchars($user['display_name']);
+            } else {
+                $nome = 'N/A';
+            }
+            
+            echo "Nome: " . $nome . "<br>";
+            echo "Tipo: " . (isset($user['type']) ? $user['type'] : 'N/A');
             echo "</div>";
             $authOk = true;
         } else {
             echo "<p class='error'>❌ Não foi possível obter informações do usuário</p>";
-            $authOk = false;
+            echo "<p class='warning'>⚠️ Possíveis causas:</p>";
+            echo "<ul style='margin-left: 20px; color: #7c2d12;'>";
+            echo "<li>Falta de escopo 'user:read:admin' no app Zoom</li>";
+            echo "<li>App não ativado corretamente no Zoom Marketplace</li>";
+            echo "<li>Conta Zoom sem usuários ativos</li>";
+            echo "</ul>";
+            echo "<p class='warning'>💡 <strong>IMPORTANTE:</strong> Mesmo com este erro, você ainda pode criar reuniões! Tente continuar.</p>";
+            
+            // Não marcar como falha crítica
+            $authOk = true; // Alterado para true para permitir continuar
         }
     } else {
         echo "<p class='error'>❌ Erro ao obter token de acesso</p>";
