@@ -85,10 +85,11 @@ function getZoomAccessToken($forceRefresh = false) {
 /**
  * Fazer requisição autenticada à API do Zoom
  */
-function zoomApiRequest($endpoint, $method = 'GET', $data = null) {
+function zoomApiRequest($endpoint, $method = 'GET', $data = null, $retry = true) {
     $token = getZoomAccessToken();
     
     if (!$token) {
+        error_log("Zoom API: Falha ao obter token para endpoint: " . $endpoint);
         return [
             'success' => false,
             'error' => 'Não foi possível obter token de autenticação'
@@ -96,6 +97,8 @@ function zoomApiRequest($endpoint, $method = 'GET', $data = null) {
     }
     
     $url = ZOOM_API_BASE_URL . $endpoint;
+    
+    error_log("Zoom API: " . $method . " " . $endpoint);
     
     $ch = curl_init();
     
@@ -135,7 +138,7 @@ function zoomApiRequest($endpoint, $method = 'GET', $data = null) {
     curl_close($ch);
     
     if ($error) {
-        error_log("Erro cURL na API Zoom: " . $error);
+        error_log("Zoom API: Erro cURL - " . $error);
         return [
             'success' => false,
             'error' => 'Erro de conexão: ' . $error
@@ -144,16 +147,31 @@ function zoomApiRequest($endpoint, $method = 'GET', $data = null) {
     
     $responseData = json_decode($response, true);
     
+    // Se receber 401 (token inválido), tentar renovar token uma vez
+    if ($httpCode === 401 && $retry) {
+        error_log("Zoom API: Token inválido (401), tentando renovar token");
+        
+        // Forçar renovação do token
+        $newToken = getZoomAccessToken(true);
+        
+        if ($newToken) {
+            error_log("Zoom API: Token renovado, tentando requisição novamente");
+            return zoomApiRequest($endpoint, $method, $data, false); // Não retry novamente
+        }
+    }
+    
     if ($httpCode >= 200 && $httpCode < 300) {
+        error_log("Zoom API: Sucesso (" . $httpCode . ")");
         return [
             'success' => true,
             'data' => $responseData,
             'http_code' => $httpCode
         ];
     } else {
+        error_log("Zoom API: Erro HTTP " . $httpCode . " - " . json_encode($responseData));
         return [
             'success' => false,
-            'error' => $responseData['message'] ?? 'Erro desconhecido',
+            'error' => $responseData['message'] ?? 'Erro desconhecido (HTTP ' . $httpCode . ')',
             'http_code' => $httpCode,
             'response' => $responseData
         ];
