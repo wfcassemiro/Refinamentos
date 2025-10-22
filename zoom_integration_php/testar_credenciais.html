@@ -263,29 +263,34 @@
                 result.style.display = 'block';
                 testBtn.disabled = false;
                 
-                if (response.ok && data.access_token) {
+                if (data.success) {
                     // Sucesso
                     result.className = 'result success';
                     result.innerHTML = `
                         <h3>✅ Credenciais Válidas!</h3>
                         <p>Token de acesso obtido com sucesso.</p>
-                        <p style="margin-top: 10px;"><strong>Token:</strong> ${data.access_token.substring(0, 30)}...</p>
-                        <p><strong>Expira em:</strong> ${data.expires_in} segundos</p>
+                        <p style="margin-top: 10px;"><strong>Token:</strong> ${data.data.token_preview}</p>
+                        <p><strong>Expira em:</strong> ${data.data.expires_in} segundos</p>
                         <p style="margin-top: 15px; font-weight: 600;">
                             ✨ Suas credenciais estão corretas! Use-as no arquivo zoom_config.php
                         </p>
                         <pre>define('ZOOM_ACCOUNT_ID', '${accountId}');
 define('ZOOM_CLIENT_ID', '${clientId}');
 define('ZOOM_CLIENT_SECRET', '${clientSecret}');</pre>
+                        <p style="margin-top: 15px; padding: 10px; background: #e6fffa; border-radius: 5px;">
+                            <strong>Próximo passo:</strong><br>
+                            Copie as credenciais acima e atualize o arquivo <code>zoom_config.php</code> no servidor.
+                        </p>
                     `;
                 } else {
                     // Erro
                     result.className = 'result error';
                     result.innerHTML = `
                         <h3>❌ Erro nas Credenciais</h3>
-                        <p><strong>Status HTTP:</strong> ${response.status}</p>
+                        <p><strong>Status HTTP:</strong> ${data.http_code || 'N/A'}</p>
                         <p><strong>Erro:</strong> ${data.error || 'Desconhecido'}</p>
                         <p><strong>Motivo:</strong> ${data.reason || 'Não especificado'}</p>
+                        ${data.message ? '<p><strong>Mensagem:</strong> ' + data.message + '</p>' : ''}
                         <p style="margin-top: 15px;">
                             <strong>Possíveis causas:</strong>
                         </p>
@@ -293,11 +298,16 @@ define('ZOOM_CLIENT_SECRET', '${clientSecret}');</pre>
                             <li>Account ID incorreto</li>
                             <li>Client ID incorreto</li>
                             <li>Client Secret incorreto</li>
+                            <li>App não existe ou foi deletado</li>
                             <li>App não está ativado no Zoom Marketplace</li>
                         </ul>
+                        <p style="margin-top: 15px; padding: 10px; background: #fff5f5; border-radius: 5px;">
+                            <strong>⚠️ Importante:</strong><br>
+                            Se você não tem certeza das credenciais, acesse o Zoom Marketplace e verifique ou crie um novo app.
+                        </p>
                         <p style="margin-top: 15px;">
-                            <a href="https://marketplace.zoom.us/" target="_blank" class="link">
-                                → Verificar no Zoom Marketplace
+                            <a href="https://marketplace.zoom.us/user/build" target="_blank" class="link">
+                                → Acessar Zoom Marketplace
                             </a>
                         </p>
                     `;
